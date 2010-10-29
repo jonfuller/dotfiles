@@ -4,7 +4,6 @@
 <% if RUBY_PLATFORM =~ /ming|win/ %>
 [core]
   editor = gvim.exe
-<% else %>
 <% end %>
 [color]
 	diff = auto
@@ -20,8 +19,8 @@
 	keepTemporaries = false
 [github]
 	user = jonfuller
-        token = <%= githubtoken %>
+  token = <%= githubtoken %>
 [alias]
-        ignored = "!git ls-files --others --exclude-standard"
+  ignored = "!git ls-files --others --exclude-standard"
 [branch]
 	autosetupmerge = true
