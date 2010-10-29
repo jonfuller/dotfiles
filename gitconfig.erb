@@ -1,10 +1,16 @@
 [user]
-	name = Matt Burke
-	email = spraints@gmail.com
+	name = Jon Fuller
+	email = fullerjc@gmail.com
+<% if RUBY_PLATFORM =~ /ming|win/ %>
+[core]
+  editor = gvim.exe
+<% else %>
+<% end %>
 [color]
 	diff = auto
 	status = auto
 	branch = auto
+  ui = auto
 [merge]
 	tool = p4merge
 [mergetool "p4merge"]
@@ -13,7 +19,7 @@
 	keepBackup = false
 	keepTemporaries = false
 [github]
-	user = spraints
+	user = jonfuller
         token = <%= githubtoken %>
 [alias]
         ignored = "!git ls-files --others --exclude-standard"
