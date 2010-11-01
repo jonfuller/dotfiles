@@ -36,26 +36,30 @@ class Dotfiles < Thor
   def erb(*files)
     files = erb_files if files.empty?
     files.each do |file|
-      dest_file, erb_file, erb_output = get_erb_filenames(file)
-      next unless File.exists? erb_file
-      if options[:force] || !File.exists?(dest_file) || File.mtime(erb_file) > File.mtime(dest_file)
-        say "erb #{erb_file} > #{dest_file}"
-        begin
-          dotfile_erb(erb_file, erb_output)
-          if File.exists? dest_file
-            system 'diff', dest_file, erb_output
-          end
-          if options[:test]
-            File.unlink erb_output
-          else
-            File.unlink dest_file if File.exists? dest_file
-            File.rename erb_output, dest_file
-          end
-        rescue => e
-          say shell.set_color("erb: #{file}: #{e}", :red, true)
-        end
+      if File.directory? file
+        erb(*Dir.entries(file).reject{|e| e == '.' || e == '..' }.map{|e| File.join(file, e)})
       else
-        say shell.set_color("erb: #{erb_file} is older than #{dest_file}, so I assume it's up-to-date.", :yellow)
+        dest_file, erb_file, erb_output = get_erb_filenames(file)
+        next unless File.exists? erb_file
+        if options[:force] || !File.exists?(dest_file) || File.mtime(erb_file) > File.mtime(dest_file)
+          say "erb #{erb_file} > #{dest_file}"
+          begin
+            dotfile_erb(erb_file, erb_output)
+            if File.exists? dest_file
+              system 'diff', dest_file, erb_output
+            end
+            if options[:test]
+              File.unlink erb_output
+            else
+              File.unlink dest_file if File.exists? dest_file
+              File.rename erb_output, dest_file
+            end
+          rescue => e
+            say shell.set_color("erb: #{file}: #{e}", :red, true)
+          end
+        else
+          say shell.set_color("erb: #{erb_file} is older than #{dest_file}, so I assume it's up-to-date.", :yellow)
+        end
       end
     end
   end
