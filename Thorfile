@@ -225,7 +225,7 @@ class Dotfiles < Thor
   end
 
   def erb_files
-    Dir["*.erb"]
+    Dir["*.erb"] + Dir.entries(".").reject{|e| e=='.' || e=='..' || e=='.git'}.select{|e| File.directory? e }
   end
 
   def get_erb_filenames(file)
