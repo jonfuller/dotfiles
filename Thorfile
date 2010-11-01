@@ -24,7 +24,7 @@ class Dotfiles < Thor
         else
           say "mv #{home_dotfile} #{src_dotfile}"
           File.rename home_dotfile, src_dotfile unless options[:test]
-          say "ln -s #{src_dotfile} #{home_dotfile}"
+
           make_link src_dotfile, home_dotfile unless options[:test]
         end
       end
@@ -144,6 +144,7 @@ class Dotfiles < Thor
     if is_windows?
       `mklink dest_file src_file`
     else
+      say "ln -s #{src_file} #{dest_file}"
       File.symlink src_file, dest_file
     end
   end
@@ -195,7 +196,6 @@ class Dotfiles < Thor
     if is_symlink?(dest_file) || File.exists?(dest_file)
       File.unlink dest_file unless options[:test]
     end
-    say "ln -s #{src_file} #{dest_file}"
     make_link src_file, dest_file unless options[:test]
   end
 
