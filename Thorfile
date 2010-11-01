@@ -48,7 +48,7 @@ class Dotfiles < Thor
           if options[:test]
             File.unlink erb_output
           else
-            File.unlink dest_file
+            File.unlink dest_file if File.exists? dest_file
             File.rename erb_output, dest_file
           end
         rescue => e
@@ -128,13 +128,22 @@ class Dotfiles < Thor
     RUBY_PLATFORM =~ /mingw32|mswin/
   end
 
+  def win_path file
+    file.gsub("/", "\\\\")
+  end
+
+  def nix_path file
+    file.gsub("\\", "/")
+  end
+
   def is_symlink? file
     if is_windows?
-      dir_name = File.dirname(file)
+      dir_name = win_path(File.dirname(file))
       file_name = File.basename(file)
 
       listing = `dir #{dir_name}`
-      listing =~ /<SYMLINK>\s*#{Regexp.escape(file_name)}/
+      is_link = listing =~ /<SYMLINK>\s*#{Regexp.escape(file_name)}/
+      is_link
     else
       File.symlink? file
     end
@@ -142,7 +151,8 @@ class Dotfiles < Thor
 
   def make_link src_file, dest_file
     if is_windows?
-      `mklink dest_file src_file`
+      say "mklink #{win_path(dest_file)} #{win_path(src_file)}" 
+      `cmd /c mklink #{win_path(dest_file)} #{win_path(src_file)}`
     else
       say "ln -s #{src_file} #{dest_file}"
       File.symlink src_file, dest_file
@@ -151,12 +161,13 @@ class Dotfiles < Thor
 
   def read_link file
     if is_windows?
-      dir_name = File.dirname(file)
+      dir_name = win_path(File.dirname(file))
       file_name = File.basename(file)
 
       listing = `dir #{dir_name}`
       listing =~ /<SYMLINK>\s*#{Regexp.escape(file_name)}\s\[(.*)\]/
-      $1
+      link = $1
+      nix_path link
     else
       File.readlink file
     end
