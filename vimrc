@@ -20,7 +20,7 @@ set guioptions-=T  " hide the toolbar
 source $VIMRUNTIME/vimrc_example.vim
 source $VIMRUNTIME/mswin.vim
 behave mswin
-colors railscasts
+colors vividchalk
 
 " make Ctrl+[hjkl] change windows
 map <C-h> <C-w>h
