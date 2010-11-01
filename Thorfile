@@ -15,7 +15,7 @@ class Dotfiles < Thor
       f = File.basename file
       f = '.' + f unless f =~ /^\./
       home_dotfile = File.expand_path f, home
-      if File.symlink? home_dotfile
+      if is_symlink? home_dotfile
         say shell.set_color("grab: #{home_dotfile} is already a symlink.", :red)
       else
         src_dotfile = File.expand_path f[1,f.size], src
@@ -25,7 +25,7 @@ class Dotfiles < Thor
           say "mv #{home_dotfile} #{src_dotfile}"
           File.rename home_dotfile, src_dotfile unless options[:test]
           say "ln -s #{src_dotfile} #{home_dotfile}"
-          File.symlink src_dotfile, home_dotfile unless options[:test]
+          make_link src_dotfile, home_dotfile unless options[:test]
         end
       end
     end
@@ -85,8 +85,8 @@ class Dotfiles < Thor
     files.each do |file|
       begin
         dest_file, src_file = get_filenames(file)
-        if File.symlink? dest_file
-          dest_target = File.readlink dest_file
+        if is_symlink? dest_file
+          dest_target = read_link dest_file
           if dest_target != src_file
             if options[:force]
               do_install src_file, dest_file
@@ -124,9 +124,46 @@ class Dotfiles < Thor
 
   private
 
+  def is_windows?
+    RUBY_PLATFORM =~ /mingw32|mswin/
+  end
+
+  def is_symlink? file
+    if is_windows?
+      dir_name = File.dirname(file)
+      file_name = File.basename(file)
+
+      listing = `dir #{dir_name}`
+      listing =~ /<SYMLINK>\s*#{Regexp.escape(file_name)}/
+    else
+      File.symlink? file
+    end
+  end
+
+  def make_link src_file, dest_file
+    if is_windows?
+      `mklink dest_file src_file`
+    else
+      File.symlink src_file, dest_file
+    end
+  end
+
+  def read_link file
+    if is_windows?
+      dir_name = File.dirname(file)
+      file_name = File.basename(file)
+
+      listing = `dir #{dir_name}`
+      listing =~ /<SYMLINK>\s*#{Regexp.escape(file_name)}\s\[(.*)\]/
+      $1
+    else
+      File.readlink file
+    end
+  end
+
   def is_link_to? dest, src
-    File.symlink?(dest) &&
-      File.readlink(dest) == src
+    is_symlink?(dest) &&
+      read_link(dest) == src
   end
 
   def home
@@ -155,11 +192,11 @@ class Dotfiles < Thor
   end
 
   def do_install(src_file, dest_file)
-    if File.symlink?(dest_file) || File.exists?(dest_file)
+    if is_symlink?(dest_file) || File.exists?(dest_file)
       File.unlink dest_file unless options[:test]
     end
     say "ln -s #{src_file} #{dest_file}"
-    File.symlink src_file, dest_file unless options[:test]
+    make_link src_file, dest_file unless options[:test]
   end
 
   def erb_files
