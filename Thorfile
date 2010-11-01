@@ -141,8 +141,10 @@ class Dotfiles < Thor
       dir_name = win_path(File.dirname(file))
       file_name = File.basename(file)
 
+      marker = File.directory?(file) ? '<SYMLINKD>' : '<SYMLINK>'
       listing = `dir #{dir_name}`
-      is_link = listing =~ /<SYMLINK>\s*#{Regexp.escape(file_name)}/
+      is_link = listing =~ /#{marker}\s*#{Regexp.escape(file_name)}\s\[(.*)\]/
+
       is_link
     else
       File.symlink? file
@@ -151,8 +153,13 @@ class Dotfiles < Thor
 
   def make_link src_file, dest_file
     if is_windows?
-      say "mklink #{win_path(dest_file)} #{win_path(src_file)}" 
-      `cmd /c mklink #{win_path(dest_file)} #{win_path(src_file)}`
+      if File.directory? src_file
+        cmd = "mklink /D #{win_path(dest_file)} #{win_path(src_file)}"
+      else
+        cmd = "mklink #{win_path(dest_file)} #{win_path(src_file)}" 
+      end
+      say cmd
+      `cmd /c #{cmd}`
     else
       say "ln -s #{src_file} #{dest_file}"
       File.symlink src_file, dest_file
@@ -161,12 +168,15 @@ class Dotfiles < Thor
 
   def read_link file
     if is_windows?
+      marker = File.directory?(file) ? '<SYMLINKD>' : '<SYMLINK>'
+
       dir_name = win_path(File.dirname(file))
       file_name = File.basename(file)
 
       listing = `dir #{dir_name}`
-      listing =~ /<SYMLINK>\s*#{Regexp.escape(file_name)}\s\[(.*)\]/
+      listing =~ /#{marker}\s*#{Regexp.escape(file_name)}\s\[(.*)\]/
       link = $1
+
       nix_path link
     else
       File.readlink file
