@@ -1,26 +1,26 @@
 [user]
-	name = Jon Fuller
-	email = fullerjc@gmail.com
+  name = Jon Fuller
+  email = fullerjc@gmail.com
 <% if RUBY_PLATFORM =~ /ming|win/ %>
 [core]
   editor = gvim.exe
 <% end %>
 [color]
-	diff = auto
-	status = auto
-	branch = auto
+  diff = auto
+  status = auto
+  branch = auto
   ui = auto
 [merge]
-	tool = p4merge
+  tool = p4merge
 [mergetool "p4merge"]
-	cmd = p4merge "$BASE" "$LOCAL" "$REMOTE" "$MERGED"
-	trustExitCode = false
-	keepBackup = false
-	keepTemporaries = false
+  cmd = p4merge "$BASE" "$LOCAL" "$REMOTE" "$MERGED"
+  trustExitCode = false
+  keepBackup = false
+  keepTemporaries = false
 [github]
-	user = jonfuller
+  user = jonfuller
   token = <%= githubtoken %>
 [alias]
   ignored = "!git ls-files --others --exclude-standard"
 [branch]
-	autosetupmerge = true
+  autosetupmerge = true
