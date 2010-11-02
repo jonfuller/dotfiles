@@ -4,6 +4,9 @@
 <% if RUBY_PLATFORM =~ /ming|win/ %>
 [core]
   editor = gvim.exe
+<% else %>
+[core]
+  editor = mvim
 <% end %>
 [color]
   diff = auto
