@@ -15,7 +15,7 @@ class Dotfiles < Thor
       f = File.basename file
       f = '.' + f unless f =~ /^\./
       home_dotfile = File.expand_path f, home
-      if File.symlink? home_dotfile
+      if is_symlink? home_dotfile
         say shell.set_color("grab: #{home_dotfile} is already a symlink.", :red)
       else
         src_dotfile = File.expand_path f[1,f.size], src
@@ -24,8 +24,8 @@ class Dotfiles < Thor
         else
           say "mv #{home_dotfile} #{src_dotfile}"
           File.rename home_dotfile, src_dotfile unless options[:test]
-          say "ln -s #{src_dotfile} #{home_dotfile}"
-          File.symlink src_dotfile, home_dotfile unless options[:test]
+
+          make_link src_dotfile, home_dotfile unless options[:test]
         end
       end
     end
@@ -36,26 +36,30 @@ class Dotfiles < Thor
   def erb(*files)
     files = erb_files if files.empty?
     files.each do |file|
-      dest_file, erb_file, erb_output = get_erb_filenames(file)
-      next unless File.exists? erb_file
-      if options[:force] || !File.exists?(dest_file) || File.mtime(erb_file) > File.mtime(dest_file)
-        say "erb #{erb_file} > #{dest_file}"
-        begin
-          dotfile_erb(erb_file, erb_output)
-          if File.exists? dest_file
-            system 'diff', dest_file, erb_output
-          end
-          if options[:test]
-            File.unlink erb_output
-          else
-            File.unlink dest_file
-            File.rename erb_output, dest_file
-          end
-        rescue => e
-          say shell.set_color("erb: #{file}: #{e}", :red, true)
-        end
+      if File.directory? file
+        erb(*Dir.entries(file).reject{|e| e == '.' || e == '..' }.map{|e| File.join(file, e)})
       else
-        say shell.set_color("erb: #{erb_file} is older than #{dest_file}, so I assume it's up-to-date.", :yellow)
+        dest_file, erb_file, erb_output = get_erb_filenames(file)
+        next unless File.exists? erb_file
+        if options[:force] || !File.exists?(dest_file) || File.mtime(erb_file) > File.mtime(dest_file)
+          say "erb #{erb_file} > #{dest_file}"
+          begin
+            dotfile_erb(erb_file, erb_output)
+            if File.exists? dest_file
+              system 'diff', dest_file, erb_output
+            end
+            if options[:test]
+              File.unlink erb_output
+            else
+              File.unlink dest_file if File.exists? dest_file
+              File.rename erb_output, dest_file
+            end
+          rescue => e
+            say shell.set_color("erb: #{file}: #{e}", :red, true)
+          end
+        else
+          say shell.set_color("erb: #{erb_file} is older than #{dest_file}, so I assume it's up-to-date.", :yellow)
+        end
       end
     end
   end
@@ -85,8 +89,8 @@ class Dotfiles < Thor
     files.each do |file|
       begin
         dest_file, src_file = get_filenames(file)
-        if File.symlink? dest_file
-          dest_target = File.readlink dest_file
+        if is_symlink? dest_file
+          dest_target = read_link dest_file
           if dest_target != src_file
             if options[:force]
               do_install src_file, dest_file
@@ -124,9 +128,68 @@ class Dotfiles < Thor
 
   private
 
+  def is_windows?
+    RUBY_PLATFORM =~ /mingw32|mswin/
+  end
+
+  def win_path file
+    file.gsub("/", "\\\\")
+  end
+
+  def nix_path file
+    file.gsub("\\", "/")
+  end
+
+  def is_symlink? file
+    if is_windows?
+      dir_name = win_path(File.dirname(file))
+      file_name = File.basename(file)
+
+      marker = File.directory?(file) ? '<SYMLINKD>' : '<SYMLINK>'
+      listing = `dir #{dir_name}`
+      is_link = listing =~ /#{marker}\s*#{Regexp.escape(file_name)}\s\[(.*)\]/
+
+      is_link
+    else
+      File.symlink? file
+    end
+  end
+
+  def make_link src_file, dest_file
+    if is_windows?
+      if File.directory? src_file
+        cmd = "mklink /D #{win_path(dest_file)} #{win_path(src_file)}"
+      else
+        cmd = "mklink #{win_path(dest_file)} #{win_path(src_file)}" 
+      end
+      say cmd
+      `cmd /c #{cmd}`
+    else
+      say "ln -s #{src_file} #{dest_file}"
+      File.symlink src_file, dest_file
+    end
+  end
+
+  def read_link file
+    if is_windows?
+      marker = File.directory?(file) ? '<SYMLINKD>' : '<SYMLINK>'
+
+      dir_name = win_path(File.dirname(file))
+      file_name = File.basename(file)
+
+      listing = `dir #{dir_name}`
+      listing =~ /#{marker}\s*#{Regexp.escape(file_name)}\s\[(.*)\]/
+      link = $1
+
+      nix_path link
+    else
+      File.readlink file
+    end
+  end
+
   def is_link_to? dest, src
-    File.symlink?(dest) &&
-      File.readlink(dest) == src
+    is_symlink?(dest) &&
+      read_link(dest) == src
   end
 
   def home
@@ -155,15 +218,14 @@ class Dotfiles < Thor
   end
 
   def do_install(src_file, dest_file)
-    if File.symlink?(dest_file) || File.exists?(dest_file)
+    if is_symlink?(dest_file) || File.exists?(dest_file)
       File.unlink dest_file unless options[:test]
     end
-    say "ln -s #{src_file} #{dest_file}"
-    File.symlink src_file, dest_file unless options[:test]
+    make_link src_file, dest_file unless options[:test]
   end
 
   def erb_files
-    Dir["*.erb"]
+    Dir["*.erb"] + Dir.entries(".").reject{|e| e=='.' || e=='..' || e=='.git'}.select{|e| File.directory? e }
   end
 
   def get_erb_filenames(file)

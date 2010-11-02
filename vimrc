@@ -3,11 +3,15 @@ set guifont=Consolas:h12:cANSI
 set nu
 set backupdir=$VIM/.vimbackup
 set directory=$VIM/.vimswap
+colors vividchalk
+
 "
 " set tabs to 2 spaces, and expand tabs to spaces
 set tabstop=2
 set shiftwidth=2	
 set expandtab
+
+source $VIM/vimfiles/autocorrect.vim
 
 " Python tabs/spaces
 autocmd FileType python set tabstop=4|set shiftwidth=4|set expandtab
@@ -15,12 +19,12 @@ autocmd FileType python set tabstop=4|set shiftwidth=4|set expandtab
 " Thor
 autocmd BufNewFile,BufRead [tT]horfile,*.thor   set filetype=ruby
 
+autocmd BufRead,BufNewFile *.config             set filetype=xml
 
 set guioptions-=T  " hide the toolbar
 source $VIMRUNTIME/vimrc_example.vim
 source $VIMRUNTIME/mswin.vim
 behave mswin
-colors railscasts
 
 " make Ctrl+[hjkl] change windows
 map <C-h> <C-w>h
@@ -29,10 +33,6 @@ map <C-k> <C-w>k
 map <C-l> <C-w>l
 
 set listchars=tab:?\ ,eol:¬
-
-au! BufRead,BufNewFile *.config  setfiletype xml
-
-source $VIM/vimfiles/autocorrect.vim
 
 set diffexpr=MyDiff()
 function MyDiff()
