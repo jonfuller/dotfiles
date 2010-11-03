@@ -20,16 +20,16 @@
 <% #####  NOT ON SEP NETWORK ##### %>
 
 # synergy connection to colossus
-alias syncolossus='ssh raiders.sep.com -l jcfuller localhost:24800:colossus.net.sep.com:24800'
+alias syncolossus='ssh raiders.sep.com -l jcfuller -L localhost:24800:colossus.net.sep.com:24800'
 
 # synergy client
 alias synclient='synergyc -f localhost:24800'
 
 # rdp connection to colossus
-alias rdpcolossus='ssh raiders.sep.com -l jcfuller localhost:3390:colossus.net.sep.com:3389'
+alias rdpcolossus='ssh raiders.sep.com -l jcfuller -L localhost:3390:colossus.net.sep.com:3389'
 
 # git connection to git.sep.com
-alias gitsep='ssh raiders.sep.com -l jcfuller localhost:9418:git.sep.com:9418'
+alias gitsep='ssh raiders.sep.com -l jcfuller -L localhost:9418:git.sep.com:9418'
 
 <% end %>
 
