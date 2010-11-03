@@ -2,6 +2,7 @@
 
 <% if RUBY_PLATFORM =~ /darwin/ %>
 <% #####  ON MAC ###### %>
+<%  %>
 # bash prompt (git)
 [[ -s $HOME/.bash_prompt ]] && source $HOME/.bash_prompt
 
@@ -9,13 +10,12 @@
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
 <% else %>
 <% #####  NOT ON MAC ###### %>
+<%  %>
 <% end %>
 
 <% require 'socket' %>
 <% if Socket.gethostname =~ /Colossus/ %>
 <% #####  ON SEP NETWORK ##### %>
-
-
 <% else %>
 <% #####  NOT ON SEP NETWORK ##### %>
 
