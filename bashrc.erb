@@ -15,9 +15,11 @@
 
 <% require 'socket' %>
 <% if Socket.gethostname =~ /Colossus/ %>
+<%  %>
 <% #####  ON SEP NETWORK ##### %>
 <% else %>
 <% #####  NOT ON SEP NETWORK ##### %>
+<%  %>
 
 # synergy connection to colossus
 alias syncolossus='ssh raiders.sep.com -l jcfuller -L localhost:24800:colossus.net.sep.com:24800'
