@@ -2,5 +2,6 @@ ssh/known_hosts
 ssh/id_*
 bashrc
 vimrc
+amazon_keys
 gitconfig
 private.yml
