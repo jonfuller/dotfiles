@@ -1,5 +1,6 @@
 ssh/known_hosts
 ssh/id_*
 bashrc
+vimrc
 gitconfig
 private.yml
