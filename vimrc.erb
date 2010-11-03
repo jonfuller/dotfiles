@@ -1,0 +1,42 @@
+set nocompatible
+set guifont=Consolas:h12:cANSI
+set nu
+<% if RUBY_PLATFORM =~ /mingw|mswin/ %>
+set backupdir=$VIM/.vimbackup
+set directory=$VIM/.vimswap
+<% else %>
+set backupdir=~/.vimbackup
+set directory=~/.vimswap
+<% end %>
+colors evening
+
+"
+" set tabs to 2 spaces, and expand tabs to spaces
+set tabstop=2
+set shiftwidth=2	
+set expandtab
+
+source $VIM/vimfiles/autocorrect.vim
+
+" Python tabs/spaces
+autocmd FileType python set tabstop=4|set shiftwidth=4|set expandtab
+
+" Thor
+autocmd BufNewFile,BufRead [tT]horfile,*.thor   set filetype=ruby
+
+autocmd BufRead,BufNewFile *.config             set filetype=xml
+
+set guioptions-=T  " hide the toolbar
+<% if RUBY_PLATFORM =~ /mingw|mswin/ %>
+source $VIMRUNTIME/vimrc_example.vim
+source $VIMRUNTIME/mswin.vim
+behave mswin
+<% end %>
+
+" make Ctrl+[hjkl] change windows
+map <C-h> <C-w>h
+map <C-j> <C-w>j
+map <C-k> <C-w>k
+map <C-l> <C-w>l
+
+set listchars=tab:?\ ,eol:¬
