@@ -5,3 +5,6 @@ vimrc
 amazon_keys
 gitconfig
 private.yml
+
+gem/credentials
+gem/specs
