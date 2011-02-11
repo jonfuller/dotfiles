@@ -11,6 +11,8 @@
 <% else %>
 <% #####  NOT ON MAC ###### %>
 <%  %>
+# Load PIK
+[[ -s $USERPROFILE/.pik/.pikrc ]] && source $USERPROFILE/.pik/.pikrc
 <% end %>
 
 <% require 'socket' %>
