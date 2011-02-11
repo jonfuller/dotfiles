@@ -1,0 +1,9 @@
+#!/bin/sh
+pik_path=C:\\pik
+
+function pik {
+$pik_path/pik_runner.exe pik.sh $@
+[[ -s $USERPROFILE/.pik/pik.sh ]] && source $USERPROFILE/.pik/pik.sh
+unset GEM_HOME
+unset GEM_PATH
+}
